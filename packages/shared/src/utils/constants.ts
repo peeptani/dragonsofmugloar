@@ -1,0 +1,16 @@
+export const API_BASE_URL = 'https://dragonsofmugloar.com/api/v2';
+
+export const ENDPOINTS = {
+  START_GAME: '/game/start',
+  MESSAGES: (gameId: string) => `/${gameId}/messages`,
+  SOLVE: (gameId: string, adId: string) => `/${gameId}/solve/${adId}`,
+  SHOP: (gameId: string) => `/${gameId}/shop`,
+  BUY: (gameId: string, itemId: string) => `/${gameId}/shop/buy/${itemId}`,
+  REPUTATION: (gameId: string) => `/${gameId}/investigate/reputation`,
+} as const;
+
+export const GAME_CONSTANTS = {
+  TARGET_SCORE: 30000,
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 1000,
+} as const;

@@ -1,0 +1,26 @@
+{
+  "name": "dragons-mugloar-monorepo",
+  "version": "1.0.0",
+  "description": "Dragons of Mugloar game solution with Vue 3 frontend and Node.js backend",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "test": "npm run test --workspaces",
+    "api:console": "npm run console --workspace=packages/api",
+    "api:server": "npm run server --workspace=packages/api",
+    "web:dev": "npm run dev --workspace=packages/web",
+    "web:build": "npm run build --workspace=packages/web"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
