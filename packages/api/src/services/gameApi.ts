@@ -43,12 +43,9 @@ export class GameApiClient {
   async solveMessage(gameId: string, adId: string): Promise<SolveResponse> {
     try {
       const url = `${this.baseURL}${ENDPOINTS.SOLVE(gameId, adId)}`;
-      /* console.log(`🔍 Making solve request to: ${url}`);
-      console.log(`🔍 GameID: ${gameId}, AdID: ${adId}`); */
       
       const response: AxiosResponse<SolveResponse> = await axios.post(url);
       
-      /* console.log(`✅ Solve response status: ${response.status}`); */
       return response.data;
     } catch (error) {
       console.error(`❌ Solve request failed:`);

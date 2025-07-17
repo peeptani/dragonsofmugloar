@@ -55,8 +55,6 @@ export class GameService {
   private async playTurn(): Promise<void> {
     if (!this.gameState) return;
 
-    console.log(`\n--- Turn ${this.gameState.turn} ---`);
-
     // Consider buying items FIRST if we have enough gold
     await this.considerShopping();
 
@@ -66,19 +64,6 @@ export class GameService {
     if (messages.length === 0) {
       console.log('No messages available');
       return;
-    }
-
-    // Log encrypted messages if found
-    const encryptedMessages = messages.filter(msg => msg.encrypted !== null);
-    if (encryptedMessages.length > 0) {
-      /* console.log(`🔐 ENCRYPTED MESSAGES DETECTED (${encryptedMessages.length}):`); */
-      encryptedMessages.forEach(msg => {
-        const decodedAdId = this.decodeBase64(msg.adId);
-        const decodedProbability = this.decodeBase64(msg.probability);
-        /* console.log(`  - ${msg.adId} → "${decodedAdId}"`);
-        console.log(`    Encrypted: ${msg.encrypted}, Reward: ${msg.reward}`);
-        console.log(`    Probability: ${msg.probability} → "${decodedProbability}"`); */
-      });
     }
 
     // Pick the best message to solve
@@ -98,8 +83,6 @@ export class GameService {
 
   private selectBestMessage(messages: Message[]): Message | null {
     if (messages.length === 0) return null;
-
-    /* console.log(`🎯 Analyzing ${messages.length} available messages:`); */
 
     const probabilityScores: { [key: string]: number } = {
       'Impossible': 0,
@@ -122,22 +105,20 @@ export class GameService {
         const decodedAdId = this.decodeBase64(msg.adId);
         const decodedMessage = this.decodeBase64(msg.message);
         const processed = {
-          ...msg, // Keep original adId for API calls
+          ...msg, 
           decodedProbability,
-          decodedAdId, // Add this for logging only
+          decodedAdId, 
           probabilityScore: probabilityScores[decodedProbability] ?? 0,
           message: decodedMessage,
         };
-        /* console.log(`   🔓 Encrypted: ${msg.adId} → "${decodedAdId}" (${decodedProbability}) - Reward: ${msg.reward}, Score: ${processed.probabilityScore}`); */
         return processed;
       }
       const processed = {
         ...msg,
         decodedProbability: msg.probability,
-        decodedAdId: msg.adId, // Same as original for non-encrypted
+        decodedAdId: msg.adId, 
         probabilityScore: probabilityScores[msg.probability] ?? 0
       };
-      /* console.log(`   📝 Regular: ${msg.adId} (${msg.probability}) - Reward: ${msg.reward}, Score: ${processed.probabilityScore}`); */
       return processed;
     });
 
@@ -149,12 +130,6 @@ export class GameService {
     const nonExpiredMessages = messagePool.filter(msg => msg.expiresIn > 1);
     const ethicalMessages = nonExpiredMessages.filter(msg => !msg.message.includes('Steal') || msg.message.includes('share some of the profits with the people'));
     const finalMessagePool = ethicalMessages.length > 0 ? ethicalMessages : messagePool;
-
-    /* console.log(`🎯 Considering ${finalMessagePool.length} viable messages (filtered out ${processedMessages.length - finalMessagePool.length} dangerous/expired ones)`); */
-    
-    if (finalMessagePool.length !== messagePool.length) {
-      /* console.log(`⚠️  Filtered out ${messagePool.length - finalMessagePool.length} messages that expire too soon`); */
-    }
 
     // Sort messages by a combined score of reward and probability
     const sortedMessages = [...finalMessagePool].sort((a, b) => {
@@ -170,19 +145,7 @@ export class GameService {
     
     const selected = sortedMessages[0];
     
-    /* console.log(`🏆 SELECTED MESSAGE:`);
-    console.log(`   AdID (original): ${selected.adId}`); // This is what gets sent to API
-    if (selected.encrypted !== null) {
-      console.log(`   AdID (decoded): ${selected.decodedAdId}`); // This is just for our info
-      console.log(`   Probability (decoded): "${selected.decodedProbability}"`);
-    }
-    console.log(`   Message: "${selected.message}"`);
-    console.log(`   Reward: ${selected.reward}`);
-    console.log(`   Probability (original): ${selected.probability}`);
-    console.log(`   Encrypted: ${selected.encrypted}`);
-    console.log(`   ExpiresIn: ${selected.expiresIn}`); */
-    
-    return selected; // Return the original message with original adId
+    return selected;
   }
 
   private async solveMessage(message: Message): Promise<void> {
@@ -209,7 +172,8 @@ export class GameService {
     this.gameState.gold = response.gold;
     this.gameState.score = response.score;
     this.gameState.turn = response.turn;
-
+    
+    console.log(`\n--- Turn ${this.gameState.turn} ---`);
     if (response.success) {
       console.log(`✅ Success! ${response.message}`);
     } else {
@@ -233,13 +197,10 @@ export class GameService {
     try {
       const shopResponse = await this.apiClient.getShop(this.gameState.gameId);
       const items = shopResponse?.items || shopResponse || [];
-      
-      console.log('Shop items available:', JSON.stringify(items.map(i => ({ id: i.id, name: i.name, cost: i.cost }))));
 
       // Emergency Healing
       const healingPotion = items.find(item => item.name.toLowerCase().includes('healing') && item.cost <= gold);
-      console.log('ROUNDED: ', Math.round(this.gameState.turn / 10));
-      if (this.gameState.lives <= Math.round(this.gameState.turn / 10) + 1 && healingPotion) {
+      if (this.gameState.lives <= Math.round(this.gameState.turn / 20) + 1 && healingPotion) {
         
         if (healingPotion) {
           console.log(`🚨 EMERGENCY: Lives low. Buying healing potion for ${healingPotion.cost} gold.`);
@@ -264,17 +225,17 @@ export class GameService {
         itemToBuy = unownedItems.reduce((mostExpensive, current) => 
           current.cost > mostExpensive.cost ? current : mostExpensive
         );
-        console.log(` collector phase: Buying new item "${itemToBuy.name}" for ${itemToBuy.cost} gold.`);
         
       } else {
         // Upgrade Phase: We own everything affordable. Buy the absolute most expensive item we can afford.
         itemToBuy = affordableItems.reduce((mostExpensive, current) => 
           current.cost > mostExpensive.cost ? current : mostExpensive
         );
-        console.log(`💎 Upgrading: Buying best available item "${itemToBuy.name}" for ${itemToBuy.cost} gold.`);
+        
       }
 
       if (itemToBuy && !itemToBuy.name.toLowerCase().includes('healing')) {
+        console.log(`💎 Buying item "${itemToBuy.name}" for ${itemToBuy.cost} gold.`);
         await this.purchaseItem(itemToBuy.id);
       }
 
@@ -294,7 +255,7 @@ export class GameService {
     this.gameState.turn = purchaseResponse.turn;
     
     this.ownedItems.add(itemId);
-
+    console.log(`\n--- Turn ${this.gameState.turn} ---`);
     console.log(`✅ Purchase successful! Gold: ${this.gameState.gold}, Lives: ${this.gameState.lives}, Turn: ${this.gameState.turn}`);
   }
 
