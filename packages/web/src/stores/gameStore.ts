@@ -27,6 +27,14 @@ export const useGameStore = defineStore('game', () => {
   )
 
   // Actions
+  const decodeBase64 = (encoded: string): string => {
+    try {
+      return atob(encoded)
+    } catch (error) {
+      return encoded
+    }
+  }
+
   const startNewGame = async () => {
     isLoading.value = true
     error.value = null
@@ -49,7 +57,26 @@ export const useGameStore = defineStore('game', () => {
     
     try {
       const response = await gameApi.getMessages(gameState.value.gameId)
-      messages.value = response;
+      
+      const processedMessages = response.map(msg => {
+        if (msg.encrypted !== null) {
+          const decodedMessage = decodeBase64(msg.message)
+          const decodedProbability = decodeBase64(msg.probability)
+          const decodedReward = decodeBase64(msg.reward.toString())
+          const decodedAdId = decodeBase64(msg.adId)
+          
+          return {
+            ...msg,
+            message: decodedMessage,
+            probability: decodedProbability,
+            reward: parseInt(decodedReward) || msg.reward,
+            adId: decodedAdId,
+          }
+        }
+        return msg
+      })
+      
+      messages.value = processedMessages
     } catch (err) {
       console.error('Failed to load messages:', err)
     }

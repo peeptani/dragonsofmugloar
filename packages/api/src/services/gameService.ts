@@ -72,7 +72,25 @@ export class GameService {
     await this.considerShopping();
 
     // Get available messages AFTER shopping (since shopping increases turn counter)
-    const messages = await this.apiClient.getMessages(this.gameState.gameId);
+    const rawMessages = await this.apiClient.getMessages(this.gameState.gameId);
+
+    const messages = rawMessages.map(msg => {
+      if (msg.encrypted !== null) {
+        const decodedMessage = this.decodeBase64(msg.message);
+        const decodedProbability = this.decodeBase64(msg.probability);
+        const decodedAdId = this.decodeBase64(msg.adId);
+        const decodedReward = this.decodeBase64(msg.reward.toString());
+        
+        return {
+          ...msg,
+          message: decodedMessage,
+          probability: decodedProbability,
+          adId: decodedAdId,
+          reward: parseInt(decodedReward) || msg.reward
+        };
+      }
+      return msg;
+    });
 
     if (messages.length === 0) {
       this.log('No messages available');
@@ -97,33 +115,13 @@ export class GameService {
   private selectBestMessage(messages: Message[]): Message | null {
     if (messages.length === 0) return null;
 
-    // Process all messages, decoding encrypted ones for analysis only
-    const processedMessages = messages.map(msg => {
-      if (msg.encrypted !== null) {
-        // Decode the encrypted probability for analysis, but keep original adId
-        const decodedProbability = this.decodeBase64(msg.probability);
-        const decodedAdId = this.decodeBase64(msg.adId);
-        const decodedMessage = this.decodeBase64(msg.message);
-        const processed = {
-          ...msg, 
-          decodedProbability,
-          decodedAdId, 
-          probabilityScore: PROBABILITY_SCORES[decodedProbability] ?? 0,
-          message: decodedMessage,
-        };
-        return processed;
-      }
-      const processed = {
-        ...msg,
-        decodedProbability: msg.probability,
-        decodedAdId: msg.adId, 
-        probabilityScore: PROBABILITY_SCORES[msg.probability] ?? 0
-      };
-      return processed;
-    });
+    const processedMessages = messages.map(msg => ({
+      ...msg,
+      probabilityScore: PROBABILITY_SCORES[msg.probability] ?? 0
+    }));
 
     // Filter out the most dangerous missions unless they are the only options
-    const viableMessages = processedMessages.filter(msg => msg.probabilityScore > 1 );
+    const viableMessages = processedMessages.filter(msg => msg.probabilityScore > 1);
     const messagePool = viableMessages.length > 0 ? viableMessages : processedMessages;
 
     // Filter out messages that will expire immediately (expiresIn <= 1)
@@ -140,33 +138,19 @@ export class GameService {
         return scoreB - scoreA;
       }
       
-      return a.reward - b.reward; 
+      return a.reward - b.reward;
     });
     
-    const selected = sortedMessages[0];
-    
-    return selected;
+    return sortedMessages[0];
   }
 
   private async solveMessage(message: Message): Promise<void> {
     if (!this.gameState) return;
 
-    // For encrypted messages, use the decoded adId
-    let adIdToUse = message.adId;
-    if (message.encrypted !== null) {
-      adIdToUse = this.decodeBase64(message.adId);
-      const decodedMessage = this.decodeBase64(message.message);
-      const decodedProbability = this.decodeBase64(message.probability);
-      const decodedReward = this.decodeBase64(message.reward.toString());
-      this.log(`Attempting to solve: "${decodedMessage}" (Reward: ${decodedReward}, Probability: ${decodedProbability})`);
+    // Messages are already decoded, so we can use them directly
+    this.log(`Attempting to solve: "${message.message}" (Reward: ${message.reward}, Probability: ${message.probability})`);
 
-    } else {
-      this.log(`Attempting to solve: "${message.message}" (Reward: ${message.reward}, Probability: ${message.probability})`);
-    }
-
-    
-
-    const response = await this.apiClient.solveMessage(this.gameState.gameId, adIdToUse);
+    const response = await this.apiClient.solveMessage(this.gameState.gameId, message.adId);
 
     this.gameState.lives = response.lives;
     this.gameState.gold = response.gold;
