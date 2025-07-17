@@ -101,7 +101,7 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 
 .no-messages {
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: #b8c5b8;
   font-style: italic;
   margin: 2rem 0;
 }
@@ -115,8 +115,8 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .message-card {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(155, 184, 143, 0.15);
+  border: 1px solid rgba(168, 191, 168, 0.3);
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -124,9 +124,9 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .message-card:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(155, 184, 143, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(58, 66, 58, 0.4);
 }
 
 .message-card.expiring-soon {
@@ -147,8 +147,8 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .reward {
-  background: linear-gradient(45deg, #f39c12, #e67e22);
-  color: white;
+  background: linear-gradient(45deg, #9bb88f, #8b9a7d);
+  color: #2f362f;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
   font-weight: bold;
@@ -157,7 +157,7 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 
 .expires {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #b8c5b8;
 }
 
 .expires.urgent {
@@ -166,7 +166,7 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .message-content {
-  color: white;
+  color: #d8e5d8;
   margin-bottom: 1rem;
   line-height: 1.4;
 }
@@ -182,10 +182,10 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .solve-button {
-  background: linear-gradient(45deg, #3498db, #2980b9);
+  background: linear-gradient(45deg, #7a8471, #5e6b54);
   border: none;
   border-radius: 20px;
-  color: white;
+  color: #d8e5d8;
   padding: 0.5rem 1.5rem;
   cursor: pointer;
   font-weight: bold;
@@ -194,16 +194,17 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .solve-button:hover:not(:disabled) {
-  background: linear-gradient(45deg, #2980b9, #1f618d);
+  background: linear-gradient(45deg, #5e6b54, #2f362f);
   transform: translateY(-1px);
 }
 
 .solve-button.high-reward {
-  background: linear-gradient(45deg, #e74c3c, #c0392b);
+  background: linear-gradient(45deg, #9bb88f, #a8bfa8);
+  color: #2f362f;
 }
 
 .solve-button.high-reward:hover:not(:disabled) {
-  background: linear-gradient(45deg, #c0392b, #a93226);
+  background: linear-gradient(45deg, #a8bfa8, #7a8471);
 }
 
 .solve-button:disabled {
@@ -230,23 +231,23 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .difficulty-indicator.common {
-  background: #95a5a6;
-  color: white;
+  background: #b8c5b8;
+  color: #2f362f;
 }
 
 .difficulty-indicator.rare {
-  background: #3498db;
-  color: white;
+  background: #7a8471;
+  color: #d8e5d8;
 }
 
 .difficulty-indicator.epic {
-  background: #9b59b6;
-  color: white;
+  background: #9bb88f;
+  color: #2f362f;
 }
 
 .difficulty-indicator.legendary {
-  background: linear-gradient(45deg, #f39c12, #e67e22);
-  color: white;
+  background: linear-gradient(45deg, #a8bfa8, #9bb88f);
+  color: #2f362f;
   animation: shimmer 2s infinite;
 }
 
@@ -262,16 +263,16 @@ const solveMessage = async (adId: string, taskDescription: string) => {
 }
 
 .messages-grid::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(168, 191, 168, 0.1);
   border-radius: 4px;
 }
 
 .messages-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: #9bb88f;
   border-radius: 4px;
 }
 
 .messages-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: #a8bfa8;
 }
 </style>

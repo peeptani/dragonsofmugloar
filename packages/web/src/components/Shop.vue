@@ -107,7 +107,7 @@ const buyItem = async (itemId: string) => {
 
 .no-items {
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: #b8c5b8;
   font-style: italic;
   margin: 2rem 0;
 }
@@ -123,8 +123,8 @@ const buyItem = async (itemId: string) => {
 }
 
 .shop-item {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(155, 184, 143, 0.15);
+  border: 1px solid rgba(168, 191, 168, 0.3);
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -132,13 +132,13 @@ const buyItem = async (itemId: string) => {
 }
 
 .shop-item:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(155, 184, 143, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(58, 66, 58, 0.4);
 }
 
 .shop-item.affordable {
-  border-color: #27ae60;
+  border-color: #9bb88f;
 }
 
 .shop-item.expensive {
@@ -155,7 +155,7 @@ const buyItem = async (itemId: string) => {
 
 .item-name {
   margin: 0;
-  color: white;
+  color: #d8e5d8;
   font-size: 1rem;
   font-weight: bold;
 }
@@ -167,8 +167,8 @@ const buyItem = async (itemId: string) => {
 }
 
 .cost-value {
-  background: linear-gradient(45deg, #f39c12, #e67e22);
-  color: white;
+  background: linear-gradient(45deg, #9bb88f, #8b9a7d);
+  color: #2f362f;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
   font-weight: bold;
@@ -176,7 +176,7 @@ const buyItem = async (itemId: string) => {
 }
 
 .cost-currency {
-  color: rgba(255, 255, 255, 0.7);
+  color: #b8c5b8;
   font-size: 0.8rem;
 }
 
@@ -186,10 +186,10 @@ const buyItem = async (itemId: string) => {
 }
 
 .buy-button {
-  background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+  background: linear-gradient(45deg, #7a8471, #5e6b54);
   border: none;
   border-radius: 20px;
-  color: white;
+  color: #d8e5d8;
   padding: 0.5rem 1.5rem;
   cursor: pointer;
   font-weight: bold;
@@ -199,7 +199,8 @@ const buyItem = async (itemId: string) => {
 }
 
 .buy-button.can-afford {
-  background: linear-gradient(45deg, #27ae60, #2ecc71);
+  background: linear-gradient(45deg, #9bb88f, #a8bfa8);
+  color: #2f362f;
 }
 
 .buy-button:hover:not(:disabled) {
@@ -226,13 +227,13 @@ const buyItem = async (itemId: string) => {
 }
 
 .affordability-indicator.affordable {
-  background: #27ae60;
-  color: white;
+  background: #9bb88f;
+  color: #2f362f;
 }
 
 .affordability-indicator.almost {
-  background: #f39c12;
-  color: white;
+  background: #8b9a7d;
+  color: #2f362f;
 }
 
 .affordability-indicator.expensive {
@@ -242,11 +243,11 @@ const buyItem = async (itemId: string) => {
 
 .shop-info {
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(168, 191, 168, 0.3);
 }
 
 .info-text {
-  color: rgba(255, 255, 255, 0.7);
+  color: #b8c5b8;
   font-size: 0.85rem;
   margin: 0 0 0.5rem 0;
   text-align: center;
@@ -259,16 +260,16 @@ const buyItem = async (itemId: string) => {
 }
 
 .shop-grid::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(168, 191, 168, 0.1);
   border-radius: 4px;
 }
 
 .shop-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: #9bb88f;
   border-radius: 4px;
 }
 
 .shop-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: #a8bfa8;
 }
 </style>
