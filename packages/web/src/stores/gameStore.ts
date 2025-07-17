@@ -41,7 +41,7 @@ export const useGameStore = defineStore('game', () => {
     
     try {
       const response = await gameApi.getMessages(gameState.value.gameId)
-      messages.value = response.messages
+      messages.value = response;
     } catch (err) {
       console.error('Failed to load messages:', err)
     }
@@ -52,7 +52,7 @@ export const useGameStore = defineStore('game', () => {
     
     try {
       const response = await gameApi.getShop(gameState.value.gameId)
-      shopItems.value = response.items
+      shopItems.value = Array.isArray(response) ? response : response.items || [];
     } catch (err) {
       console.error('Failed to load shop:', err)
     }
@@ -98,8 +98,9 @@ export const useGameStore = defineStore('game', () => {
       gameState.value.level = response.level
       gameState.value.turn = response.turn
       
-      // Reload shop after purchase
+      // Reload shop and messages after purchase
       await loadShop()
+      await loadMessages()
       
       return response
     } catch (err) {

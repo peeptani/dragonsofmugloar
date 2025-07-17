@@ -2,6 +2,7 @@
   "name": "@dragons-mugloar/web",
   "version": "1.0.0",
   "description": "Dragons of Mugloar Vue 3 Frontend",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

@@ -40,9 +40,6 @@
       <p class="info-text">
         💡 Items may provide various benefits to improve your dragon's abilities
       </p>
-      <div class="gold-status">
-        Available Gold: <span class="gold-amount">{{ gameStore.gameState?.gold || 0 }}</span>
-      </div>
     </div>
   </div>
 </template>
@@ -67,7 +64,7 @@ const getBuyButtonText = (cost: number): string => {
     return `Need ${needed} more gold`
   }
   return 'Purchase'
-}
+} 
 
 const getAffordabilityClass = (cost: number): string => {
   if (!gameStore.gameState) return 'unknown'
@@ -90,7 +87,7 @@ const getAffordabilityText = (cost: number): string => {
 const buyItem = async (itemId: string) => {
   try {
     const result = await gameStore.buyItem(itemId)
-    if (result?.shoppingSuccess === 'true') {
+    if (result) {
       console.log('Item purchased successfully!')
     } else {
       console.log('Purchase failed!')
@@ -120,7 +117,7 @@ const buyItem = async (itemId: string) => {
   flex-direction: column;
   gap: 1rem;
   flex: 1;
-  max-height: 400px;
+  max-height: 450px;
   overflow-y: auto;
   margin-bottom: 1rem;
 }
@@ -218,7 +215,7 @@ const buyItem = async (itemId: string) => {
 
 .affordability-indicator {
   position: absolute;
-  top: -8px;
+  top: -4px;
   right: 10px;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
@@ -244,7 +241,6 @@ const buyItem = async (itemId: string) => {
 }
 
 .shop-info {
-  margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -255,20 +251,6 @@ const buyItem = async (itemId: string) => {
   margin: 0 0 0.5rem 0;
   text-align: center;
   font-style: italic;
-}
-
-.gold-status {
-  text-align: center;
-  color: white;
-  font-weight: bold;
-}
-
-.gold-amount {
-  background: linear-gradient(45deg, #f39c12, #e67e22);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  margin-left: 0.5rem;
 }
 
 /* Custom scrollbar */

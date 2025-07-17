@@ -48,7 +48,6 @@ export interface ShopResponse {
 }
 
 export interface PurchaseResponse {
-  shoppingSuccess: string;
   gold: number;
   lives: number;
   level: number;

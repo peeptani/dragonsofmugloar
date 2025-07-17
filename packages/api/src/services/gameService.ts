@@ -3,7 +3,8 @@ import {
   GameState,
   Message,
   ShopItem,
-  GAME_CONSTANTS
+  GAME_CONSTANTS,
+  PROBABILITY_SCORES
 } from '@dragons-mugloar/shared';
 
 export class GameService {
@@ -96,19 +97,6 @@ export class GameService {
   private selectBestMessage(messages: Message[]): Message | null {
     if (messages.length === 0) return null;
 
-    const probabilityScores: { [key: string]: number } = {
-      'Impossible': 0,
-      'Suicide mission': 1,
-      'Risky': 2,
-      'Playing with fire': 3,
-      'Gamble': 4,
-      'Rather detrimental': 5,
-      'Hmmm....': 6,
-      'Quite likely': 7,
-      'Walk in the park': 8,
-      'Piece of cake': 9,
-    };
-
     // Process all messages, decoding encrypted ones for analysis only
     const processedMessages = messages.map(msg => {
       if (msg.encrypted !== null) {
@@ -120,7 +108,7 @@ export class GameService {
           ...msg, 
           decodedProbability,
           decodedAdId, 
-          probabilityScore: probabilityScores[decodedProbability] ?? 0,
+          probabilityScore: PROBABILITY_SCORES[decodedProbability] ?? 0,
           message: decodedMessage,
         };
         return processed;
@@ -129,7 +117,7 @@ export class GameService {
         ...msg,
         decodedProbability: msg.probability,
         decodedAdId: msg.adId, 
-        probabilityScore: probabilityScores[msg.probability] ?? 0
+        probabilityScore: PROBABILITY_SCORES[msg.probability] ?? 0
       };
       return processed;
     });

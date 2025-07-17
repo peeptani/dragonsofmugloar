@@ -14,3 +14,16 @@ export const GAME_CONSTANTS = {
   MAX_RETRIES: 3,
   RETRY_DELAY: 1000,
 } as const;
+
+export const PROBABILITY_SCORES: { [key: string]: number } = {
+  'Impossible': 0,
+  'Suicide mission': 1,
+  'Risky': 2,
+  'Playing with fire': 3,
+  'Gamble': 4,
+  'Rather detrimental': 5,
+  'Hmmm....': 6,
+  'Quite likely': 7,
+  'Walk in the park': 8,
+  'Piece of cake': 9,
+};

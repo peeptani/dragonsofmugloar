@@ -27,7 +27,7 @@
             @click="solveMessage(message.adId)"
             :disabled="gameStore.isLoading || !gameStore.hasLives"
             class="solve-button"
-            :class="{ 'high-reward': getRewardValue(message.reward) >= 100 }"
+            :class="{ 'high-reward': getRewardValue(String(message.reward)) >= 100 }"
           >
             {{ gameStore.isLoading ? 'Solving...' : 'Accept Quest' }}
           </button>
@@ -45,14 +45,15 @@
 import { computed } from 'vue'
 import { useGameStore } from '../stores/gameStore'
 import type { Message } from '@dragons-mugloar/shared'
+import { PROBABILITY_SCORES } from '@dragons-mugloar/shared'
 
 const gameStore = useGameStore()
 
 const sortedMessages = computed(() => {
   return [...gameStore.messages].sort((a, b) => {
     // Sort by reward (descending) then by expiration (ascending)
-    const rewardA = getRewardValue(a.reward)
-    const rewardB = getRewardValue(b.reward)
+    const rewardA = getRewardValue(String(a.reward))
+    const rewardB = getRewardValue(String(b.reward))
     
     if (rewardA !== rewardB) {
       return rewardB - rewardA
@@ -67,20 +68,17 @@ const getRewardValue = (reward: string): number => {
 }
 
 const getDifficultyClass = (message: Message): string => {
-  const reward = getRewardValue(message.reward)
-  if (reward >= 200) return 'legendary'
-  if (reward >= 100) return 'epic'
-  if (reward >= 50) return 'rare'
-  return 'common'
-}
+  const score = PROBABILITY_SCORES[message.probability] ?? 0;
+  if (score >= 8) return 'common';
+  if (score >= 6) return 'rare';
+  if (score >= 4) return 'epic';
+  if (score >= 2) return 'legendary';
+  return 'impossible';     
+};
 
 const getDifficultyLabel = (message: Message): string => {
-  const reward = getRewardValue(message.reward)
-  if (reward >= 200) return 'Legendary'
-  if (reward >= 100) return 'Epic'
-  if (reward >= 50) return 'Rare'
-  return 'Common'
-}
+  return message.probability;
+};
 
 const solveMessage = async (adId: string) => {
   try {
@@ -216,7 +214,7 @@ const solveMessage = async (adId: string) => {
 
 .difficulty-indicator {
   position: absolute;
-  top: -8px;
+  top: -4px;
   right: 10px;
   padding: 0.25rem 0.75rem;
   border-radius: 15px;
@@ -224,6 +222,11 @@ const solveMessage = async (adId: string) => {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.difficulty-indicator.impossible {
+  background: #c0392b;
+  color: white;
 }
 
 .difficulty-indicator.common {
