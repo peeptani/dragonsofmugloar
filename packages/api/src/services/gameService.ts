@@ -46,7 +46,7 @@ export class GameService {
     if (!this.gameState) {
       throw new Error('Game not started. Call startNewGame() first.');
     }
-    const { maxTurns = 100, delayMs = 500 } = options;
+    const { maxTurns = 300, delayMs = 100 } = options;
 
     this.log(`Starting game ${this.gameState.gameId}`);
     this.log(`Initial state: Lives: ${this.gameState.lives}, Gold: ${this.gameState.gold}, Score: ${this.gameState.score}`);
@@ -194,7 +194,7 @@ export class GameService {
 
       // Emergency Healing
       const healingPotion = items.find(item => item.name.toLowerCase().includes('healing') && item.cost <= gold);
-      if (this.gameState.lives <= Math.round(this.gameState.turn / 20) + 1 && healingPotion) {
+      if (this.gameState.lives <= Math.round(this.gameState.turn / 20) + 2 && healingPotion) {
         
         if (healingPotion) {
           this.log(`🚨 EMERGENCY: Lives low. Buying healing potion for ${healingPotion.cost} gold.`);
