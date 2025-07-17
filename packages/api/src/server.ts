@@ -49,10 +49,24 @@ app.post('/api/game/:gameId/auto-play', async (req, res) => {
   
   try {
     const finalState = await gameService.playGame();
-    res.json(finalState);
+    const logs = gameService.getLogs();
+    res.json({ ...finalState, logs });
   } catch (error) {
     console.error('Error during auto-play:', error);
     res.status(500).json({ error: 'Auto-play failed' });
+  }
+});
+
+app.post('/api/game/auto-auto-play', async (req, res) => {
+  try {
+    const gameService = new GameService();
+    await gameService.startNewGame();
+    const finalState = await gameService.playGame();
+    const logs = gameService.getLogs();
+    res.json({ ...finalState, logs });
+  } catch (error) {
+    console.error('Error during auto-auto-play:', error);
+    res.status(500).json({ error: 'Auto-auto-play failed' });
   }
 });
 

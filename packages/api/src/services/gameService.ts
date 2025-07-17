@@ -10,9 +10,15 @@ export class GameService {
   private apiClient: GameApiClient;
   private gameState: GameState | null = null;
   private ownedItems: Set<string> = new Set();
+  private logs: string[] = [];
 
   constructor() {
     this.apiClient = new GameApiClient();
+  }
+
+  private log(message: string) {
+    console.log(message);
+    this.logs.push(message);
   }
 
   async startNewGame(): Promise<GameState> {
@@ -27,7 +33,12 @@ export class GameService {
       turn: response.turn
     };
     this.ownedItems = new Set();
+    this.logs = []; // Reset logs for a new game
     return this.gameState;
+  }
+
+  public getLogs(): string[] {
+    return this.logs;
   }
 
   async playGame(): Promise<GameState> {
@@ -35,8 +46,8 @@ export class GameService {
       throw new Error('Game not started. Call startNewGame() first.');
     }
 
-    console.log(`Starting game ${this.gameState.gameId}`);
-    console.log(`Initial state: Lives: ${this.gameState.lives}, Gold: ${this.gameState.gold}, Score: ${this.gameState.score}`);
+    this.log(`Starting game ${this.gameState.gameId}`);
+    this.log(`Initial state: Lives: ${this.gameState.lives}, Gold: ${this.gameState.gold}, Score: ${this.gameState.score}`);
 
     while (this.gameState.lives > 0 && this.gameState.score < GAME_CONSTANTS.TARGET_SCORE) {
       try {
@@ -44,11 +55,12 @@ export class GameService {
         await this.delay(500); // Small delay between turns
       } catch (error) {
         console.error('Error during turn:', error);
+        this.log(`Error during turn: ${error instanceof Error ? error.message : error}`);
         break;
       }
     }
 
-    console.log(`Game ended. Final score: ${this.gameState.score}, Lives: ${this.gameState.lives}`);
+    this.log(`Game ended. Final score: ${this.gameState.score}, Lives: ${this.gameState.lives}`);
     return this.gameState;
   }
 
@@ -62,7 +74,7 @@ export class GameService {
     const messages = await this.apiClient.getMessages(this.gameState.gameId);
 
     if (messages.length === 0) {
-      console.log('No messages available');
+      this.log('No messages available');
       return;
     }
 
@@ -158,10 +170,10 @@ export class GameService {
       const decodedMessage = this.decodeBase64(message.message);
       const decodedProbability = this.decodeBase64(message.probability);
       const decodedReward = this.decodeBase64(message.reward.toString());
-      console.log(`Attempting to solve: "${decodedMessage}" (Reward: ${decodedReward}, Probability: ${decodedProbability})`);
+      this.log(`Attempting to solve: "${decodedMessage}" (Reward: ${decodedReward}, Probability: ${decodedProbability})`);
 
     } else {
-      console.log(`Attempting to solve: "${message.message}" (Reward: ${message.reward}, Probability: ${message.probability})`);
+      this.log(`Attempting to solve: "${message.message}" (Reward: ${message.reward}, Probability: ${message.probability})`);
     }
 
     
@@ -173,14 +185,14 @@ export class GameService {
     this.gameState.score = response.score;
     this.gameState.turn = response.turn;
     
-    console.log(`\n--- Turn ${this.gameState.turn} ---`);
+    this.log(`\n--- Turn ${this.gameState.turn} ---`);
     if (response.success) {
-      console.log(`✅ Success! ${response.message}`);
+      this.log(`✅ Success! ${response.message}`);
     } else {
-      console.log(`❌ Failed! ${response.message}`);
+      this.log(`❌ Failed! ${response.message}`);
     }
 
-    console.log(`Current state: Lives: ${this.gameState.lives}, Gold: ${this.gameState.gold}, Score: ${this.gameState.score}`);
+    this.log(`Current state: Lives: ${this.gameState.lives}, Gold: ${this.gameState.gold}, Score: ${this.gameState.score}`);
   }
 
   private async considerShopping(): Promise<void> {
@@ -203,7 +215,7 @@ export class GameService {
       if (this.gameState.lives <= Math.round(this.gameState.turn / 20) + 1 && healingPotion) {
         
         if (healingPotion) {
-          console.log(`🚨 EMERGENCY: Lives low. Buying healing potion for ${healingPotion.cost} gold.`);
+          this.log(`🚨 EMERGENCY: Lives low. Buying healing potion for ${healingPotion.cost} gold.`);
           await this.purchaseItem(healingPotion.id);
         }
         return; // Do nothing else this turn
@@ -213,7 +225,7 @@ export class GameService {
       const affordableItems = items.filter(item => item.cost <= gold);
 
       if (affordableItems.length === 0) {
-        console.log(`💰 Holding gold (${gold}). No affordable items in shop.`);
+        this.log(`💰 Holding gold (${gold}). No affordable items in shop.`);
         return;
       }
 
@@ -235,12 +247,12 @@ export class GameService {
       }
 
       if (itemToBuy && !itemToBuy.name.toLowerCase().includes('healing')) {
-        console.log(`💎 Buying item "${itemToBuy.name}" for ${itemToBuy.cost} gold.`);
+        this.log(`💎 Buying item "${itemToBuy.name}" for ${itemToBuy.cost} gold.`);
         await this.purchaseItem(itemToBuy.id);
       }
 
     } catch (error) {
-      console.log('Shopping failed:', error); 
+      this.log(`Shopping failed: ${error instanceof Error ? error.message : error}`); 
     }
   }
 
@@ -255,8 +267,8 @@ export class GameService {
     this.gameState.turn = purchaseResponse.turn;
     
     this.ownedItems.add(itemId);
-    console.log(`\n--- Turn ${this.gameState.turn} ---`);
-    console.log(`✅ Purchase successful! Gold: ${this.gameState.gold}, Lives: ${this.gameState.lives}, Turn: ${this.gameState.turn}`);
+    this.log(`\n--- Turn ${this.gameState.turn} ---`);
+    this.log(`✅ Purchase successful! Gold: ${this.gameState.gold}, Lives: ${this.gameState.lives}, Turn: ${this.gameState.turn}`);
   }
 
   private delay(ms: number): Promise<void> {
