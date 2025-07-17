@@ -42,18 +42,28 @@ export class GameService {
     return this.logs;
   }
 
-  async playGame(): Promise<GameState> {
+  async playGame(options: { maxTurns?: number; delayMs?: number } = {}): Promise<GameState> {
     if (!this.gameState) {
       throw new Error('Game not started. Call startNewGame() first.');
     }
+    const { maxTurns = 100, delayMs = 500 } = options;
 
     this.log(`Starting game ${this.gameState.gameId}`);
     this.log(`Initial state: Lives: ${this.gameState.lives}, Gold: ${this.gameState.gold}, Score: ${this.gameState.score}`);
 
-    while (this.gameState.lives > 0 && this.gameState.score < GAME_CONSTANTS.TARGET_SCORE) {
+    let turnCount = 0;
+    while (
+      this.gameState.lives > 0 && 
+      this.gameState.score < GAME_CONSTANTS.TARGET_SCORE && 
+      turnCount < maxTurns
+    ) {
       try {
         await this.playTurn();
-        await this.delay(500); // Small delay between turns
+        turnCount++;
+        
+        if (delayMs > 0) {
+          await this.delay(delayMs);
+        }
       } catch (error) {
         console.error('Error during turn:', error);
         this.log(`Error during turn: ${error instanceof Error ? error.message : error}`);
@@ -61,7 +71,7 @@ export class GameService {
       }
     }
 
-    this.log(`Game ended. Final score: ${this.gameState.score}, Lives: ${this.gameState.lives}`);
+    this.log(`Game ended after ${turnCount} turns. Final score: ${this.gameState.score}, Lives: ${this.gameState.lives}`);
     return this.gameState;
   }
 
@@ -138,7 +148,7 @@ export class GameService {
         return scoreB - scoreA;
       }
       
-      return a.reward - b.reward;
+      return b.reward - a.reward;
     });
     
     return sortedMessages[0];

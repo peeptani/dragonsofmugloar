@@ -36,7 +36,7 @@ dragonsofmugloar/
 - **Dual Mode Operation**: 
   - Console application for automated gameplay
   - Express server with REST API
-- **Game Logic**: Intelligent quest selection and shopping strategy
+- **Game Logic**: Somewhat (to be improved) intelligent quest selection and shopping strategy
 - **Error Handling**: Comprehensive error handling and retry mechanisms
 - **Unit Tests**: Jest-based testing with mocks
 - **Type Safety**: Full TypeScript integration with shared types
@@ -116,8 +116,11 @@ This will:
 # Build all packages
 npm run build
 
-# Run all tests
-npm run test
+# Run core api tests
+npm run test --workspace=packages/api
+
+# Run all api tests
+npm run test:all --workspace=packages/api
 
 # Start development mode for all packages
 npm run dev

@@ -1,4 +1,17 @@
 node_modules
 dist
+coverage
 *.tsbuildinfo
 !spec/*.tsbuildinfo
+
+packages/*/src/**/*.js
+packages/*/src/**/*.d.ts
+packages/*/tests/**/*.js
+packages/*/tests/**/*.d.ts
+
+dist/
+build/
+lib/
+
+**/*.js.map
+**/*.d.ts.map
