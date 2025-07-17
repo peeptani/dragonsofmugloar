@@ -106,35 +106,111 @@
       </div>
     </div>
 
-    <!-- Error Display -->
-    <div v-if="gameStore.error" class="error-message">
-      {{ gameStore.error }}
-    </div>
-
-    <!-- Victory Message -->
-    <div v-if="gameStore.gameState && gameStore.gameState.score >= 1000" class="victory-message">
-      🎉 Congratulations! You've achieved the target score of 1000+ points! 🎉
-    </div>
-
-    <!-- Game Over Message -->
-    <div v-if="gameStore.gameState && !gameStore.hasLives" class="game-over-message">
-      💀 Game Over! No lives remaining. Final score: {{ gameStore.gameState.score }}
+    <!-- Toast Container -->
+    <div class="toast-container">
+      <div 
+        v-for="toast in toasts" 
+        :key="toast.id"
+        class="toast"
+        :class="[toast.type, { 'show': toast.show }]"
+      >
+        <span class="toast-message">{{ toast.message }}</span>
+        <button @click="removeToast(toast.id)" class="toast-close">×</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useGameStore } from '../stores/gameStore'
 import MessageList from './MessageList.vue'
 import Shop from './Shop.vue'
 
 const gameStore = useGameStore()
 
+// Toast system
+const toasts = ref<Array<{
+  id: string
+  message: string
+  type: 'success' | 'error' | 'warning' | 'info'
+  show: boolean
+}>>([])
+
+const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+  const id = Date.now().toString()
+  const toast = {
+    id,
+    message,
+    type,
+    show: true
+  }
+  
+  toasts.value.push(toast)
+  
+  setTimeout(() => {
+    removeToast(id)
+  }, 5000)
+}
+
+const removeToast = (id: string) => {
+  const index = toasts.value.findIndex(t => t.id === id)
+  if (index > -1) {
+    toasts.value[index].show = false
+    setTimeout(() => {
+      toasts.value.splice(index, 1)
+    }, 300)
+  }
+}
+
+// Watch for errors
+watch(() => gameStore.error, (newError) => {
+  if (newError) {
+    showToast(`❌ ${newError}`, 'error')
+    setTimeout(() => {
+      gameStore.error = null
+    }, 100)
+  }
+})
+
+// Watch for victory condition
+const previousScore = ref(0)
+watch(() => gameStore.gameState?.score, (newScore) => {
+  if (newScore !== undefined && newScore >= 1000 && previousScore.value < 1000) {
+    showToast('🎉 Congratulations! You\'ve achieved the target score of 1000+ points! 🎉', 'success')
+  }
+  if (newScore !== undefined) {
+    previousScore.value = newScore
+  }
+})
+
+// Watch for game over condition
+const previousLives = ref(0)
+watch(() => gameStore.gameState?.lives, (newLives) => {
+  if (newLives !== undefined && newLives <= 0 && previousLives.value > 0) {
+    showToast(`💀 Game Over! No lives remaining. Final score: ${gameStore.gameState?.score || 0}`, 'error')
+  }
+  if (newLives !== undefined) {
+    previousLives.value = newLives
+  }
+})
+
+// Initialize previous values when game starts
+watch(() => gameStore.gameState, (newState) => {
+  if (newState) {
+    previousScore.value = newState.score || 0
+    previousLives.value = newState.lives || 0
+  }
+}, { immediate: true })
+
 const startGame = async () => {
   try {
     await gameStore.startNewGame()
+    showToast('🎮 New game started! Good luck!', 'success')
   } catch (error) {
     console.error('Failed to start game:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to start game'
+    showToast(`❌ ${errorMessage}`, 'error')
   }
 }
 
@@ -144,8 +220,11 @@ const refreshData = async () => {
       gameStore.loadMessages(),
       gameStore.loadShop()
     ])
+    showToast('📡 Data refreshed successfully', 'success')
   } catch (error) {
     console.error('Failed to refresh data:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to refresh data'
+    showToast(`❌ ${errorMessage}`, 'error')
   }
 }
 
@@ -410,38 +489,87 @@ const formatTime = (timestamp: Date) => {
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Toast Styles */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+}
 
-.error-message {
-  background: rgba(231, 76, 60, 0.9);
-  color: white;
+.toast {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
   padding: 1rem;
-  border-radius: 10px;
-  margin: 1rem 0;
-  text-align: center;
-  font-weight: bold;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  border-left: 4px solid #3498db;
 }
 
-.victory-message {
-  background: rgba(46, 204, 113, 0.9);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 15px;
-  margin: 1rem 0;
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  animation: pulse 2s infinite;
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
 }
 
-.game-over-message {
-  background: rgba(231, 76, 60, 0.9);
+.toast.success {
+  border-left-color: #27ae60;
+  background: rgba(46, 204, 113, 0.95);
   color: white;
-  padding: 1.5rem;
-  border-radius: 15px;
-  margin: 1rem 0;
-  text-align: center;
-  font-size: 1.1rem;
+}
+
+.toast.error {
+  border-left-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.95);
+  color: white;
+}
+
+.toast.warning {
+  border-left-color: #f39c12;
+  background: rgba(243, 156, 18, 0.95);
+  color: white;
+}
+
+.toast.info {
+  border-left-color: #3498db;
+  background: rgba(52, 152, 219, 0.95);
+  color: white;
+}
+
+.toast-message {
+  flex: 1;
+  font-weight: 500;
+  margin-right: 1rem;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
   font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.toast-close:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 @keyframes pulse {
