@@ -190,9 +190,11 @@ Tests include:
 
 The backend server exposes the following endpoints:
 
+- `POST /api/game/auto-auto-play` - Auto-play the game
+
 - `POST /api/game/start` - Start a new game
 - `GET /api/game/:gameId/state` - Get current game state
-- `POST /api/game/:gameId/auto-play` - Auto-play the game
+- `POST /api/game/:gameId/auto-play` - Auto-play the started game
 - `GET /api/game/:gameId/messages` - Get available quests
 - `GET /api/game/:gameId/shop` - Get shop items
 - `GET /health` - Health check
