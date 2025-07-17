@@ -10,6 +10,7 @@ export const useGameStore = defineStore('game', () => {
   const shopItems = ref<ShopItem[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const isGameOver = ref(false)
   const results = ref<Array<{
     id: string
     type: 'quest' | 'purchase'
@@ -20,7 +21,7 @@ export const useGameStore = defineStore('game', () => {
   }>>([])
 
   // Getters
-  const isGameActive = computed(() => gameState.value !== null)
+  const isGameActive = computed(() => gameState.value !== null && !isGameOver.value)
   const hasLives = computed(() => gameState.value ? gameState.value.lives > 0 : false)
   const canAffordItem = computed(() => (cost: number) => 
     gameState.value ? gameState.value.gold >= cost : false
@@ -38,6 +39,7 @@ export const useGameStore = defineStore('game', () => {
   const startNewGame = async () => {
     isLoading.value = true
     error.value = null
+    isGameOver.value = false  // Reset game over state
     
     try {
       const newGameState = await gameApi.startGame()
@@ -57,6 +59,17 @@ export const useGameStore = defineStore('game', () => {
     
     try {
       const response = await gameApi.getMessages(gameState.value.gameId)
+      
+      if (response && typeof response === 'object' && 'status' in response && response.status === 'Game Over') {
+        isGameOver.value = true
+        messages.value = []
+        return
+      }
+      
+      if (!Array.isArray(response)) {
+        messages.value = []
+        return
+      }
       
       const processedMessages = response.map(msg => {
         if (msg.encrypted !== null) {
@@ -78,6 +91,12 @@ export const useGameStore = defineStore('game', () => {
       
       messages.value = processedMessages
     } catch (err) {
+      if (err && typeof err === 'object' && 'status' in err && err.status === 410) {
+        isGameOver.value = true
+        messages.value = []
+        return
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Failed to load messages'
       console.error('Failed to load messages:', err)
       error.value = errorMessage
@@ -91,6 +110,12 @@ export const useGameStore = defineStore('game', () => {
       const response = await gameApi.getShop(gameState.value.gameId)
       shopItems.value = Array.isArray(response) ? response : response.items || [];
     } catch (err) {
+      if (err && typeof err === 'object' && 'status' in err && err.status === 410) {
+        isGameOver.value = true
+        shopItems.value = []
+        return
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Failed to load shop'
       console.error('Failed to load shop:', err)
       error.value = errorMessage
@@ -188,6 +213,7 @@ export const useGameStore = defineStore('game', () => {
     shopItems.value = []
     results.value = []
     error.value = null
+    isGameOver.value = false
   }
 
   return {
@@ -197,6 +223,7 @@ export const useGameStore = defineStore('game', () => {
     shopItems,
     isLoading,
     error,
+    isGameOver,
     results,
     
     // Getters

@@ -118,6 +118,46 @@
         <button @click="removeToast(toast.id)" class="toast-close">×</button>
       </div>
     </div>
+
+    <!-- Game Over Modal -->
+    <div v-if="gameStore.isGameOver" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>🎮 Game Over</h2>
+        </div>
+        <div class="modal-body">
+          <div class="game-over-stats" v-if="gameStore.gameState">
+            <div class="stat-item">
+              <span class="stat-label">Final Score</span>
+              <span class="stat-value">{{ gameStore.gameState.score }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Level Reached</span>
+              <span class="stat-value">{{ gameStore.gameState.level }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Gold Collected</span>
+              <span class="stat-value">{{ gameStore.gameState.gold }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Turns Survived</span>
+              <span class="stat-value">{{ gameStore.gameState.turn }}</span>
+            </div>
+          </div>
+          <p class="game-over-message">
+            {{ (gameStore.gameState?.score || 0) >= 1000 ? 
+              '🎉 Congratulations! You reached the target score!' : 
+              '💀 Your dragon has fallen in battle. Better luck next time!' 
+            }}
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button @click="startGame" class="primary-button">
+            🎮 Start New Game
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -202,6 +242,13 @@ watch(() => gameStore.gameState, (newState) => {
     previousLives.value = newState.lives || 0
   }
 }, { immediate: true })
+
+// Watch for game over status
+watch(() => gameStore.isGameOver, (isOver) => {
+  if (isOver) {
+    showToast('💀 Game Over! Your dragon has fallen.', 'error')
+  }
+})
 
 const startGame = async () => {
   try {
@@ -576,5 +623,133 @@ const formatTime = (timestamp: Date) => {
   0% { transform: scale(1); }
   50% { transform: scale(1.02); }
   100% { transform: scale(1); }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.modal-body {
+  margin-bottom: 2rem;
+}
+
+.game-over-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.game-over-message {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.primary-button {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 </style>
