@@ -22,7 +22,7 @@
         <div class="item-actions">
           <button 
             @click="buyItem(item.id)"
-            :disabled="gameStore.isLoading || !canAfford(item.cost)"
+            :disabled="gameStore.isLoading || !canAfford(item.cost) || !gameStore.hasLives"
             class="buy-button"
             :class="{ 'can-afford': canAfford(item.cost) }"
           >
