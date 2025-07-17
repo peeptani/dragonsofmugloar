@@ -24,7 +24,7 @@
         
         <div class="message-actions">
           <button 
-            @click="solveMessage(message.adId)"
+            @click="solveMessage(message.adId, message.message)"
             :disabled="gameStore.isLoading || !gameStore.hasLives"
             class="solve-button"
             :class="{ 'high-reward': getRewardValue(String(message.reward)) >= 100 }"
@@ -80,9 +80,9 @@ const getDifficultyLabel = (message: Message): string => {
   return message.probability;
 };
 
-const solveMessage = async (adId: string) => {
+const solveMessage = async (adId: string, taskDescription: string) => {
   try {
-    const result = await gameStore.solveMessage(adId)
+    const result = await gameStore.solveMessage(adId, taskDescription)
     if (result?.success) {
       console.log('Quest completed successfully!')
     } else {

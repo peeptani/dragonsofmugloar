@@ -57,6 +57,44 @@
         </div>
       </div>
 
+      <!-- Results Panel -->
+      <div class="section results-section">
+        <h2>Activity Log</h2>
+        <div class="results-container">
+          <div v-if="gameStore.results.length === 0" class="no-results">
+            No activity yet. Complete quests or buy items to see results here.
+          </div>
+          <div v-else class="results-list">
+            <div 
+              v-for="result in gameStore.results" 
+              :key="result.id"
+              class="result-item"
+              :class="{ 'success': result.success, 'failure': !result.success, 'purchase': result.type === 'purchase' }"
+            >
+              <div class="result-header">
+                <span class="result-type">{{ result.type === 'quest' ? '⚔️' : '🛒' }}</span>
+                <span class="result-message">{{ result.message }}</span>
+                <span class="result-time">{{ formatTime(result.timestamp) }}</span>
+              </div>
+              <div v-if="result.details" class="result-details">
+                <span v-if="result.type === 'quest' && result.details.goldChange" class="detail-item">
+                  💰 {{ result.details.goldChange > 0 ? '+' : '' }}{{ result.details.goldChange }} gold
+                </span>
+                <span v-if="result.type === 'quest' && result.details.scoreChange" class="detail-item">
+                  ⭐ {{ result.details.scoreChange > 0 ? '+' : '' }}{{ result.details.scoreChange }} score
+                </span>
+                <span v-if="result.type === 'quest' && result.details.livesChange" class="detail-item">
+                  💖 {{ result.details.livesChange > 0 ? '+' : '' }}{{ result.details.livesChange }} lives
+                </span>
+                <span v-if="result.type === 'purchase'" class="detail-item">
+                  💰 -{{ result.details.cost }} gold
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Game Actions -->
       <div class="actions-section">
         <button @click="gameStore.resetGame" class="secondary-button">
@@ -109,6 +147,20 @@ const refreshData = async () => {
   } catch (error) {
     console.error('Failed to refresh data:', error)
   }
+}
+
+const formatTime = (timestamp: Date) => {
+  const now = new Date()
+  const diff = now.getTime() - timestamp.getTime()
+  const minutes = Math.floor(diff / 60000)
+  
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+  
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  
+  return timestamp.toLocaleTimeString()
 }
 </script>
 
@@ -223,6 +275,113 @@ const refreshData = async () => {
   text-align: center;
   font-size: 1.3rem;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.results-section {
+  margin-bottom: 2rem;
+}
+
+.results-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-results {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding: 2rem;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.result-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.result-item.success {
+  border-left: 4px solid #27ae60;
+}
+
+.result-item.failure {
+  border-left: 4px solid #e74c3c;
+}
+
+.result-item.purchase {
+  border-left: 4px solid #f39c12;
+}
+
+.result-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.result-type {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.result-message {
+  white-space: pre-wrap;
+  color: white;
+  font-weight: 500;
+  flex: 1;
+}
+
+.result-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.result-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.detail-item {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Custom scrollbar for results */
+.results-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.results-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.results-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.results-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .actions-section {

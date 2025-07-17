@@ -10,6 +10,14 @@ export const useGameStore = defineStore('game', () => {
   const shopItems = ref<ShopItem[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const results = ref<Array<{
+    id: string
+    type: 'quest' | 'purchase'
+    message: string
+    success: boolean
+    timestamp: Date
+    details?: any
+  }>>([])
 
   // Getters
   const isGameActive = computed(() => gameState.value !== null)
@@ -58,7 +66,18 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  const solveMessage = async (adId: string) => {
+  const addResult = (type: 'quest' | 'purchase', message: string, success: boolean, details?: any) => {
+    results.value.unshift({
+      id: Date.now().toString(),
+      type,
+      message,
+      success,
+      timestamp: new Date(),
+      details
+    })
+  }
+
+  const solveMessage = async (adId: string, taskDescription: string) => {
     if (!gameState.value) return
     
     isLoading.value = true
@@ -71,6 +90,15 @@ export const useGameStore = defineStore('game', () => {
       gameState.value.gold = response.gold
       gameState.value.score = response.score
       gameState.value.turn = response.turn
+
+      const resultMessage = `You took on task ${taskDescription}\n${response.message}`
+      
+      // Add result to history
+      addResult('quest', resultMessage, response.success, {
+        goldChange: response.gold - (gameState.value.gold || 0),
+        scoreChange: response.score - (gameState.value.score || 0),
+        livesChange: response.lives - (gameState.value.lives || 0)
+      })
       
       // Reload messages after solving
       await loadMessages()
@@ -92,11 +120,23 @@ export const useGameStore = defineStore('game', () => {
     try {
       const response = await gameApi.buyItem(gameState.value.gameId, itemId)
       
+      // Find the item name for the result message
+      const item = shopItems.value.find(i => i.id === itemId)
+      const itemName = item ? item.name : 'Unknown Item'
+      
       // Update game state
       gameState.value.gold = response.gold
       gameState.value.lives = response.lives
       gameState.value.level = response.level
       gameState.value.turn = response.turn
+      
+      // Add result to history
+      addResult('purchase', `Purchased ${itemName}`, true, {
+        cost: item?.cost || 0,
+        goldAfter: response.gold,
+        livesAfter: response.lives,
+        levelAfter: response.level
+      })
       
       // Reload shop and messages after purchase
       await loadShop()
@@ -115,6 +155,7 @@ export const useGameStore = defineStore('game', () => {
     gameState.value = null
     messages.value = []
     shopItems.value = []
+    results.value = []
     error.value = null
   }
 
@@ -125,6 +166,7 @@ export const useGameStore = defineStore('game', () => {
     shopItems,
     isLoading,
     error,
+    results,
     
     // Getters
     isGameActive,
